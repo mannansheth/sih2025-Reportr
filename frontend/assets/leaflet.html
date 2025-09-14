@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Leaflet Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      html, body, #map { 
+        height: 100%; 
+        margin: 0; 
+        padding: 0; 
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const map = L.map('map').setView([19.0760, 72.8777], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const markers = [
+        { lat: 19.1853, lng: 72.8777, iconUrl: 'favicon.png' }, 
+        { lat: 19.0760, lng: 72.8777, iconUrl: '/marker2.png' }, 
+        { lat: 19.1999792, lng: 72.8981052, iconUrl: '/marker3.png' }, 
+        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' },
+        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
+        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
+        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
+        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
+        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' } 
+      ];
+
+      markers.forEach(m => {
+        const icon = L.icon({
+          iconUrl: m.iconUrl,
+          iconSize: [15, 15],
+        });
+        L.marker([m.lat, m.lng]).addTo(map);
+      });
+
+      function addMarker(lat, lng, iconUrl) {
+        const icon = L.icon({ iconUrl, iconSize: [32, 32] });
+        const marker = L.marker([lat, lng], { icon }).addTo(map);
+        markers.push(marker);
+      }
+
+      function clearMarkers() {
+        markers.forEach(m => map.removeLayer(m));
+        markers.length = 0;
+      }
+
+      function setView(lat, lng, zoom = 5) {
+        map.setView([lat, lng], zoom);
+      }
+
+      // Listen to messages from React Native
+      window.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "addMarker") addMarker(data.lat, data.lng, data.iconUrl);
+        if (data.type === "clearMarkers") clearMarkers();
+        if (data.type === "setView") setView(data.lat, data.lng, data.zoom);
+      });
+    </script>
+  </body>
+</html>
