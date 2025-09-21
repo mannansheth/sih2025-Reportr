@@ -6,6 +6,7 @@ import {
   View,
   StyleSheet,
   Text,
+  Dimensions,
   KeyboardAvoidingView,
   TouchableOpacity,
   Platform,
@@ -21,9 +22,11 @@ import CameraUI from "../component/CameraPage/CameraUI.jsx";
 import ReportForm from "../component/CameraPage/ReportForm.jsx";
 import ImagePreview from "../component/CameraPage/ImagePreview.jsx";
 import { LinearGradient } from "expo-linear-gradient";
-
-
-const CameraScreen = () => {
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from "expo-file-system/legacy";
+import piexif from "piexifjs";
+import { normalizeExif } from "../helpers/ExifHelper.js";
+const CameraScreen = ({ setIndex }) => {
   const [type, setType] = useState("back");
   const cameraRef = useRef(null);
   const [image, setImage] = useState(null);
@@ -101,39 +104,81 @@ const CameraScreen = () => {
     }
     let loc = await Location.getCurrentPositionAsync({});
 
-    let location =await Location.reverseGeocodeAsync({latitude: loc.coords.latitude, longitude:loc.coords.longitude})
+    let location = await Location.reverseGeocodeAsync({latitude: loc.coords.latitude, longitude:loc.coords.longitude})
 
     setCoordinates({
       "latitude": loc.coords.latitude, 
       "longitude":loc.coords.longitude, 
       "readableLoc":location[0], 
-      "message":exif && "Could not detect location in image. Defaulting to user location..."
+      "message":exif && exif?.GPSLatitude && "Could not detect location in image. Defaulting to user location..."
     })
   };
+  // const pickImage = async () => {
+  //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   if (status !== "granted") {
+  //     alert("Permission required!");
+  //     return;
+  //   }
+  //   let result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.mediaTypes,
+  //     allowsEditing: true,
+  //     quality: 0.7,
+  //     base64: true,
+  //     exif:true
+  //   });
+
+  //   if (!result.canceled) {
+  //     getReportLocation(result.assets[0].exif);
+  //     setImage(result.assets[0]);
+  //     setShowImagePreview(true);
+  //     const predictions = await detectIssues(
+  //       result.assets[0].base64,
+  //       result.assets[0].mimeType || "image/jpeg"
+  //     );
+  //     predictions.sort((a,b) => b.probability - a.probability)
+  //     setPredictions(predictions);
+  //   }
+  // }
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission required!");
-      return;
-    }
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.mediaTypes,
-      allowsEditing: true,
-      quality: 0.7,
-      base64: true,
-      exif:true
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["image/*"],
+      copyToCacheDirectory: true,
     });
 
-    if (!result.canceled) {
-      getReportLocation(result.assets[0].exif);
-      setImage(result.assets[0].uri);
+    if (result.type === "cancel") return;
+
+    try {
+      // Copy file to FileSystem cache dir (ensures it's readable)
+      const destUri = FileSystem.cacheDirectory + result.assets[0].name;
+      await FileSystem.copyAsync({
+        from: result.assets[0].uri,
+        to: destUri,
+      });
+
+      // Read base64
+      const base64 = await FileSystem.readAsStringAsync(destUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Parse EXIF
+      const dataUri = "data:image/jpeg;base64," + base64;
+      let exifData = {};
+      try {
+        const exif = piexif.load(dataUri);
+        exifData = normalizeExif(exif);
+      } catch (e) {
+        console.log("No EXIF data found:", e);
+      }
+
+      getReportLocation(exifData);
+      setImage({ uri: destUri, base64, mimeType: result.mimeType });
       setShowImagePreview(true);
-      const predictions = await detectIssues(
-        result.assets[0].base64,
-        result.assets[0].mimeType || "image/jpeg"
-      );
-      predictions.sort((a,b) => b.probability - a.probability)
+
+      const predictions = await detectIssues(base64, result.mimeType || "image/jpeg");
+      predictions.sort((a, b) => b.probability - a.probability);
       setPredictions(predictions);
+    } catch (error) {
+      console.error("Error handling document:", error);
     }
   };
 
@@ -143,7 +188,7 @@ const CameraScreen = () => {
       base64: true,
     });
     getReportLocation();
-    setImage(photo.uri);
+    setImage(photo);
     setShowImagePreview(true);
     const predictions = await detectIssues(
         photo.base64,
@@ -183,7 +228,7 @@ const CameraScreen = () => {
         >
           <LinearGradient
           colors={['#185795ff', 'rgba(0, 59, 79, 0.52)', '#112f4e']}
-          start={{ x: 0.5, y: 0 }}
+          start={{ x: 100, y: 0 }}
           style={{ flexGrow: 1, 
                   paddingVertical: 20 }} >
             <Animated.ScrollView
@@ -206,15 +251,15 @@ const CameraScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.collapseBtn]}
-                onPress={() => setShowImagePreview(true)}
+                onPress={() => setShowImagePreview(!showImagePreview)}
               >
-                <MaterialIcons name="open-in-full" size={30} color="white" />
+                <MaterialIcons name={!showImagePreview ? "keyboard-arrow-down" : "keyboard-arrow-up"} size={30} color="white" />
               </TouchableOpacity>
-              {showImagePreview && 
+              {showImagePreview &&
               <>
               
                 <ImagePreview 
-                  image={image}
+                  image={image.uri}
                   predictions={predictions}
                   scrollY={scrollY}
                   setShowImagePreview={setShowImagePreview}
@@ -227,7 +272,7 @@ const CameraScreen = () => {
                         </Text> */}
                     </Animated.View>
                 </>
-
+               
               }
               <ReportForm 
                 coordinates={coordinates}
@@ -235,6 +280,7 @@ const CameraScreen = () => {
                 showImagePreview={showImagePreview}
                 predictions={predictions}
                 image={image}
+                setIndex={setIndex}
               />
               
             </Animated.ScrollView>
@@ -279,6 +325,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 40,
     borderWidth: 3,
+    zIndex:999,
     borderColor: "rgba(255,255,255,0.7)",
     backgroundColor: "transparent",
     position: "absolute",

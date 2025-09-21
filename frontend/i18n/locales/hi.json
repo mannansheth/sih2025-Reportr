@@ -1,0 +1,104 @@
+{
+  "auth": {
+    "welcome": "ReportR में आपका स्वागत है",
+    "subtitle": "अपने क्षेत्र में नागरिक समस्याओं की रिपोर्ट करें",
+    "phoneNumber": "फोन नंबर",
+    "enterPhone": "अपना फोन नंबर दर्ज करें",
+    "enterName": "अपना नाम दर्ज करें",
+    "sendOTP": "OTP भेजें",
+    "verifyOTP": "OTP सत्यापित करें",
+    "enterOTP": "अपने फोन पर भेजा गया OTP दर्ज करें",
+    "resendOTP": "OTP पुनः भेजें",
+    "verifying": "सत्यापित कर रहे हैं...",
+    "invalidPhone": "कृपया एक वैध फोन नंबर दर्ज करें",
+    "invalidOTP": "कृपया एक वैध OTP दर्ज करें",
+    "otpSent": "OTP सफलतापूर्वक भेजा गया",
+    "loginSuccess": "लॉगिन सफल",
+    "loginFailed": "लॉगिन असफल। कृपया पुनः प्रयास करें",
+    "biometricPrompt": "प्रमाणीकरण के लिए अपनी उंगली का उपयोग करें",
+    "biometricFallback": "पासवर्ड का उपयोग करें",
+    "biometricError": "बायोमेट्रिक प्रमाणीकरण असफल"
+  },
+  "report": {
+    "newReport": "नई रिपोर्ट",
+    "selectCategory": "श्रेणी चुनें",
+    "categories": {
+      "pothole": "गड्ढा",
+      "garbage": "कचरा",
+      "streetlight": "स्ट्रीट लाइट",
+      "water": "पानी की समस्या",
+      "emergency": "आपातकाल",
+      "other": "अन्य"
+    },
+    "description": "विवरण",
+    "enterDescription": "समस्या का विस्तार से वर्णन करें",
+    "location": "स्थान",
+    "currentLocation": "वर्तमान स्थान का उपयोग करें",
+    "selectLocation": "मानचित्र पर स्थान चुनें",
+    "attachPhoto": "फोटो संलग्न करें",
+    "takePhoto": "फोटो लें",
+    "chooseFromGallery": "गैलरी से चुनें",
+    "submitReport": "रिपोर्ट जमा करें",
+    "submitting": "जमा कर रहे हैं...",
+    "reportSubmitted": "रिपोर्ट सफलतापूर्वक जमा की गई",
+    "reportFailed": "रिपोर्ट जमा करने में असफल",
+    "requiredField": "यह फील्ड आवश्यक है",
+    "locationRequired": "स्थान आवश्यक है",
+    "photoRequired": "फोटो आवश्यक है",
+    "transcriptionFailed": "ऑडियो ट्रांसक्रिप्शन असफल"
+  },
+  "map": {
+    "searchLocation": "स्थान खोजें...",
+    "myReports": "मेरी रिपोर्ट्स",
+    "allReports": "सभी रिपोर्ट्स",
+    "filterBy": "श्रेणी के अनुसार फिल्टर करें",
+    "noReports": "कोई रिपोर्ट नहीं मिली",
+    "reportDetails": "रिपोर्ट विवरण",
+    "status": "स्थिति",
+    "reportedBy": "द्वारा रिपोर्ट किया गया",
+    "reportedOn": "रिपोर्ट की तारीख",
+    "statusTypes": {
+      "pending": "लंबित",
+      "inProgress": "प्रगति में",
+      "resolved": "हल हो गया",
+      "rejected": "अस्वीकृत"
+    }
+  },
+  "navigation": {
+    "home": "होम",
+    "map": "मानचित्र",
+    "camera": "रिपोर्ट",
+    "profile": "प्रोफाइल",
+    "analytics": "एनालिटिक्स",
+    "reports": "रिपोर्ट्स"
+  },
+  "camera": {
+    "takePhoto": "फोटो लें",
+    "retakePhoto": "दोबारा लें",
+    "usePhoto": "फोटो का उपयोग करें",
+    "cameraPermission": "फोटो लेने के लिए कैमरा अनुमति आवश्यक है",
+    "grantPermission": "अनुमति दें",
+    "permissionDenied": "कैमरा अनुमति अस्वीकृत"
+  },
+  "common": {
+    "ok": "ठीक है",
+    "cancel": "रद्द करें",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "save": "सेव करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता",
+    "retry": "पुनः प्रयास करें",
+    "close": "बंद करें"
+  },
+  "settings": {
+    "language": "भाषा",
+    "selectLanguage": "भाषा चुनें",
+    "english": "English",
+    "hindi": "हिन्दी",
+    "marathi": "मराठी"
+  }
+}

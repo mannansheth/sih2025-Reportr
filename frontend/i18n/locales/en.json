@@ -1,0 +1,104 @@
+{
+  "auth": {
+    "welcome": "Welcome to ReportR",
+    "subtitle": "Report civic issues in your area",
+    "phoneNumber": "Phone Number",
+    "enterPhone": "Enter your phone number",
+    "enterName": "Enter your name",
+    "sendOTP": "Send OTP",
+    "verifyOTP": "Verify OTP",
+    "enterOTP": "Enter the OTP sent to your phone",
+    "resendOTP": "Resend OTP",
+    "verifying": "Verifying...",
+    "invalidPhone": "Please enter a valid phone number",
+    "invalidOTP": "Please enter a valid OTP",
+    "otpSent": "OTP sent successfully",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed. Please try again",
+    "biometricPrompt": "Use your fingerprint to authenticate",
+    "biometricFallback": "Use Password",
+    "biometricError": "Biometric authentication failed"
+  },
+  "report": {
+    "newReport": "New Report",
+    "selectCategory": "Select Category",
+    "categories": {
+      "pothole": "Pothole",
+      "garbage": "Garbage",
+      "streetlight": "Street Light",
+      "water": "Water Issue",
+      "emergency": "Emergency",
+      "other": "Other"
+    },
+    "description": "Description",
+    "enterDescription": "Describe the issue in detail",
+    "location": "Location",
+    "currentLocation": "Use Current Location",
+    "selectLocation": "Select Location on Map",
+    "attachPhoto": "Attach Photo",
+    "takePhoto": "Take Photo",
+    "chooseFromGallery": "Choose from Gallery",
+    "submitReport": "Submit Report",
+    "submitting": "Submitting...",
+    "reportSubmitted": "Report submitted successfully",
+    "reportFailed": "Failed to submit report",
+    "requiredField": "This field is required",
+    "locationRequired": "Location is required",
+    "photoRequired": "Photo is required",
+    "transcriptionFailed": "Failed to transcribe audio"
+  },
+  "map": {
+    "searchLocation": "Search location...",
+    "myReports": "My Reports",
+    "allReports": "All Reports",
+    "filterBy": "Filter by category",
+    "noReports": "No reports found",
+    "reportDetails": "Report Details",
+    "status": "Status",
+    "reportedBy": "Reported by",
+    "reportedOn": "Reported on",
+    "statusTypes": {
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "resolved": "Resolved",
+      "rejected": "Rejected"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "map": "Map",
+    "camera": "Report",
+    "profile": "Profile",
+    "analytics": "Analytics",
+    "reports": "Reports"
+  },
+  "camera": {
+    "takePhoto": "Take Photo",
+    "retakePhoto": "Retake",
+    "usePhoto": "Use Photo",
+    "cameraPermission": "Camera permission is required to take photos",
+    "grantPermission": "Grant Permission",
+    "permissionDenied": "Camera permission denied"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "close": "Close"
+  },
+  "settings": {
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "english": "English",
+    "hindi": "हिन्दी",
+    "marathi": "मराठी"
+  }
+}

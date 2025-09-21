@@ -7,22 +7,26 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
-  Animated
+  Animated,
+  Modal
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { transcribeDesc } from "../../services/transcription";
-import axios from "axios";
 import * as SecureStore from "expo-secure-store"
-import { LinearGradient } from "expo-linear-gradient";
 import SubmitButton from "../SubmitButton";
 import uuid from 'react-native-uuid';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { generatePDF } from '../../services/pdfGeneration';
+import { sendNotification } from "../../services/messagingService";
+import * as Network from 'expo-network'
+import { submitReport } from "../../services/gemini";
 
-const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predictions, image }) => {
+const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predictions, image, setIndex }) => {
+
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [category, setCategory] = useState("")
   const [recording, setRecording] = useState(null)
   const [isRecording, setIsRecording] = useState(false);
@@ -33,32 +37,22 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [number, setNumber] = useState(JSON.parse(SecureStore.getItem("userDetails")).number || "1234567890")
   const [description, setDescription] = useState("")
-  const [name, setName] = useState("");
+  const [name, setName] = useState(JSON.parse(SecureStore.getItem("userDetails")).name || "Umang");
   const progressAnim = useState(new Animated.Value(0))[0];
-  const userId = SecureStore.getItem("userId");
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pdf, setPdf] = useState(null);
+  const userId = JSON.parse(SecureStore.getItem("userDetails")).id
   const locInWords = [coordinates.readableLoc?.name, coordinates.readableLoc?.street, coordinates.readableLoc?.city, coordinates.readableLoc?.region, coordinates.readableLoc?.postalCode, coordinates.readableLoc?.country].filter(Boolean).join(", ");
+  const rId = `Rid_${uuid.v4().replaceAll("-", "").slice(0, 10)}`;
 
-  useEffect(() => {
-    const getUserName = async () => {
-      try {
-        const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}api/user/getUserName`, {
-          id : userId
-        })
-        setName(response.data.name)
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    getUserName()
-  }, [])
-  
   const createAndStoreReportData = async (reportData) => {
     const reportFolder = `${FileSystem.documentDirectory}reports/${reportData.reportID}/`;
     await FileSystem.makeDirectoryAsync(reportFolder, {intermediates: true});
 
-    await FileSystem.copyAsync({from : image, to: `${reportFolder}image.jpeg`});
-
+    await FileSystem.copyAsync({from : image.uri, to: `${reportFolder}image.jpeg`});
 
     if (audioUri) await FileSystem.copyAsync({from : audioUri, to: `${reportFolder}audio.m4a`});
 
@@ -81,26 +75,52 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
       Alert.alert("Username required")
       return;
     }
-    const rId = `Rid_${uuid.v4().replaceAll("-", "").slice(0, 12)}`
+   setIsSubmitLoading(true);
     const reportData = {
       reportID : rId,
       userID: userId,
       name:name,
-      number : null,
+      number : number,
       category:category,
       description:description,
       location : {lat : coordinates.latitude, lng : coordinates.longitude, loc : locInWords},
       createdDate : new Date().toISOString(),
     }
-    console.log(new Date(reportData.createdDate).toLocaleTimeString())
     await createAndStoreReportData(reportData);
-
-    const fileUri = await generatePDF(reportData, image);
-    console.log(fileUri);
-    await Sharing.shareAsync(fileUri);
+    const pdfUri = await generatePDF(reportData, image.uri);
+    Alert.alert(pdfUri);
+    setPdf(pdfUri);
+    try {
+      sendNotification(rId, name, userId);
+      const success = submitReport({
+        ...reportData,
+        image:image.uri,
+        base64: image.base64,
+        audio:audioUri,
+        pdf: pdfUri
+      });
+      
+    } catch {
+      Alert.alert("No internet detected. Report will be saved as draft.")
+      
+    } finally {
+      setShowDownloadModal(prev => !prev);
+      setIsSubmitLoading(false);
+      
+    }
     // Alert.alert(uuid.v4().replaceAll("-", "").slice(0, 12))
   }
 
+  const handleShare = async () => {
+    try {
+      setIsLoading(true);
+      await Sharing.shareAsync(pdf);
+    } catch (err) {
+      console.error("Share error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -118,12 +138,20 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
       );
       setIsRecording(true);
       setRecording(recording);
+      
     } catch (error) {
       console.error('Failed to start recording', error);
       Alert.alert('Error', 'Failed to start recording');
     }
   };
+  // useEffect(() => {
+  //   if (recording) {
+  //     setTimeout(() => {
+  //       if (isRecording) stopRecording();
 
+  //     }, 10000)
+  //   }
+  // }, [recording])
   const stopRecording = async () => {
     try {
       if (!recording) return;
@@ -340,11 +368,11 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
         {coordinates.latitude ? 
           <>
             {showLocationMessage && coordinates.message ? 
-              <Text style={{fontSize:12}}>{coordinates.message}</Text>
+              <Text style={{fontSize:12, color:"white"}}>{coordinates.message}</Text>
               :
               <TextInput 
                 placeholder="Enter your name" 
-                style={[styles.input, {backgroundColor:"rgba(188, 188, 188, 0.53)"}]} 
+                style={[styles.input, {backgroundColor:"rgba(255, 255, 255, 0.7)"}]} 
                 value={`${coordinates.latitude}, ${coordinates.longitude} \n(${locInWords})`}
                 multiline
                 editable={false}
@@ -352,16 +380,25 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
             }
           </>
           :
-          <Text>Fetching location...</Text>
+          <Text style={{color:"white"}}>Fetching location...</Text>
         }
 
         <Text style={styles.label}>Username <Text style={{color:"red", fontSize:23}}>*</Text></Text>
         <TextInput
           placeholder="Name"
           style={[styles.input, {paddingLeft:12}]}
-          placeholderTextColor={"lightgrey"}
+          placeholderTextColor={"grey"}
           value={name}
           onChangeText={setName}
+          editable={false}
+        />
+        <Text style={styles.label}>Number <Text style={{color:"rgba(179, 188, 0, 1)", fontSize:10}}>(Enter number to receive push notifications)</Text></Text>
+        <TextInput
+          placeholder="Number"
+          style={[styles.input, {paddingLeft:12}]}
+          placeholderTextColor={"grey"}
+          value={number}
+          onChangeText={setNumber}
           editable={false}
         />
 
@@ -369,16 +406,25 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
         <TextInput
           placeholder="Enter issue (or pick from below)"
           style={[styles.input, {paddingLeft:12}]}
-          placeholderTextColor={"lightgrey"}
+          placeholderTextColor={"grey"}
           value={category}
           onChangeText={setCategory}
+          autoComplete="yes"
         />
-        
+        {/* {predictions && predictions.map((p, i) => (
+          <View key={i}>
+            <Text style={{color:"white"}}>Issue: {p.issue}</Text>
+            <Text style={{color:"white"}}>Priority: {p.priority}</Text>
+            <Text style={{color:"white"}}>Reasoning: {p.reasoning}</Text>
+            <Text style={{color:"white"}}>Department: {p.department}</Text>
+          </View>
+        ))} */}
         <View style={{
           display:"flex",
           flexDirection:"row",
           flexWrap: "wrap",
           gap:4,
+          alignItems:"center",
           marginBottom:10
         }}>
           {predictions ? 
@@ -397,12 +443,11 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
                   style={{
                     backgroundColor:"rgba(255, 255, 255, 0.43)", 
                     borderRadius:100,
-                    padding: 7,
-                    paddingRight:12,
-                    paddingLeft:12,
+                    padding: 8,
+                    paddingHorizontal:12,
                     color:"white", 
                     fontSize:10,
-                    textAlign:"center",
+                    justifyContent:"center",
                     borderWidth:category.includes(p.issue) ? 2 : 0,
                     borderColor: category.includes(p.issue) ? "blue" : ""
                   }}>
@@ -422,7 +467,7 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
           }
         </View>
 
-        <Text style={styles.label}>Description</Text>
+        <Text style={styles.label}>Description <Text style={{fontStyle:"italic", color:"grey"}}>(Optional)</Text> </Text>
         <View style={{display:"flex", flexDirection:"row", alignItems:"center", gap:12}}>
           {isTranscribing ? 
             <View style={{
@@ -438,7 +483,7 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
           :
             <TextInput
               placeholder="Enter description"
-              placeholderTextColor={"lightgrey"}
+              placeholderTextColor={"grey"}
               multiline
               value={description}
               onChangeText={setDescription}
@@ -478,7 +523,50 @@ const ReportForm = ({ coordinates, showLocationMessage, showImagePreview, predic
           
         </View>
         
-        <SubmitButton handleReportSubmit={handleReportSubmit} />
+        <SubmitButton handleReportSubmit={handleReportSubmit} isSubmitLoading={isSubmitLoading} />
+        {showDownloadModal &&
+          <Modal
+            animationType="slide"
+            transparent
+            visible={showDownloadModal}
+            onRequestClose={() => {setShowDownloadModal(false); setIndex(4)}}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.modal}>
+                <Text style={styles.title}>A copy of the report has been generated.</Text>
+
+                {/* <TouchableOpacity style={styles.button} onPress={handleDownload}>
+                  <Text style={styles.buttonText}>
+                    {loading ? "Processing..." : "Download"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.button} onPress={handleShare}>
+                  <Text style={styles.buttonText}>
+                    {loading ? "Processing..." : "Share"}
+                  </Text>
+                </TouchableOpacity> */}
+
+                <TouchableOpacity style={styles.button} onPress={handleShare} >
+                  {!isLoading ? 
+                    <>
+                      <Text style={styles.buttonText}>
+                        Download/Share 
+                      </Text>
+                      <MaterialIcons name="share" size={18} color="white" />
+                    </>
+                    :
+                    <ActivityIndicator size="large" />
+                  }
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.button, styles.close]} onPress={() => {setShowDownloadModal(false); setIndex(4)}}>
+                  <Text style={[styles.buttonText, { color: "red" }]}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View> 
+          </Modal>
+        }
       </View>
     </>
   );
@@ -497,11 +585,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    color:"rgba(231, 231, 231, 1)",
-    borderColor: "#ccc",
+    color:"rgba(0, 0, 0, 1)",
+    backgroundColor:"white",
+    borderColor: "#00e2f6ff",
     padding: 12,
     borderRadius: 8,
     marginBottom: 5,
+    elevation:10
   },
   buttonContainer: {
     position: 'relative',
@@ -582,6 +672,48 @@ const styles = StyleSheet.create({
     color: 'rgba(231, 231, 231, 0.8)',
     fontSize: 12,
     fontFamily: 'monospace',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modal: {
+    width: "90%",
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    elevation: 5,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 700,
+    paddingBottom: 20,
+    marginBottom:15,
+    borderBottomWidth:1,
+    borderBottomColor:"black",
+    textAlign:"center"
+  },
+  button: {
+    width: "70%",
+    padding: 8,
+    backgroundColor: "#112f4e",
+    borderRadius: 5,
+    marginVertical: 5,
+    alignItems: "center",
+    justifyContent:"center",
+    display:"flex",
+    flexDirection:"row"
+  },
+  close: {
+    backgroundColor: "#eee",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+    marginRight:10
   },
 });
 

@@ -40,7 +40,7 @@ export default function AnimatedIcon({ route, focused, color }) {
             alignItems: "center",
             borderRadius: 20,
             
-            top:route.key === 'home' && -8
+            top:route.key === 'home' ? -8 : -2
 
 
           }}

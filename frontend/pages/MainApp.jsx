@@ -7,7 +7,7 @@ import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { BottomNavigation } from "react-native-paper";
 import { useState } from 'react';
 import AnimatedIcon from '../component/AnimatedIcon';
-import MapScreen from "../component/maps/MapScreen";
+import MapScreen from "./MapScreen";
 
 
 export default function App() {
@@ -23,10 +23,10 @@ export default function App() {
   ]);
 
 
-  const Home = () => <CameraScreen/>;
+  const Home = () => <CameraScreen setIndex={setIndex}/>;
   const Profile = () => <View style={styles.screen}><Text>Profile</Text></View>;
   const Analytics = () => <View style={styles.screen}><Text>Analytics</Text></View>;
-  const Maps = () => <View style={styles.screen}><MapScreen /></View>;
+  const Maps = () => <View style={{flex:1}}><MapScreen index={index}/></View>;
   const Reports = () => <View style={styles.screen}><Text>Reports</Text></View>;
   const renderScene = SceneMap({
     analytics:Analytics,
@@ -48,57 +48,56 @@ export default function App() {
         renderTabBar={() => null}
         swipeEnabled={routes[index].key != "home" && routes[index].key != 'maps'}
       />
-      <BottomNavigation.Bar
-        navigationState={{ index, routes }}
-        onTabPress={({ route }) => {
-          setIndex(routes.indexOf(route)); // 👈 this syncs taps to TabView
-        }}
-        activeIndicatorStyle={{
-          backgroundColor: "transparent",
-        }}
+      <LinearGradient 
+      colors={["#b0edff6a", "#2baaff90", "#000000c8"]}
+          start={{ x: 5, y: 0 }}>
 
-        renderIcon={({ route, focused, color }) => (
-          <AnimatedIcon route={route} focused={focused} color={color}/>
-        )}
-        renderLabel={({ route, focused, color }) => {
-          if (route.key === "home") return null; // hide only for home
+        <BottomNavigation.Bar
+          navigationState={{ index, routes }}
+          onTabPress={({ route }) => {
+            setIndex(routes.indexOf(route)); 
+          }}
+          activeIndicatorStyle={{
+            backgroundColor: "transparent",
+          }}
 
-
-          return (
-            <Text
-              style={{
-                fontSize: 11,
-                color,
-                textAlign: "center",
-                marginTop: 0,
-              }}
-            >
-              {route.title}
-            </Text>
-          );
-        }}
-        activeColor="lightblue"
-        
-        inactiveColor="white"            
-        style={{
-          backgroundColor: "#112f4e",  
-          height: 100,                
-          borderTopLeftRadius: 15,    
-          borderTopRightRadius: 15,
-          elevation: 5,                
-          shadowColor: "#000000ff",        
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.1,
-          shadowRadius: 3,
-
-
-        }}
-
-      />
+          renderIcon={({ route, focused, color }) => (
+            <AnimatedIcon route={route} focused={focused} color={color}/>
+          )}
+          renderLabel={({ route, focused, color }) => {
+            if (route.key === "home") return null; // hide only for home
+            return (
+              <Text
+                style={{
+                  fontSize: 11,
+                  color,
+                  textAlign: "center",
+                  marginTop: 0,
+                }}
+              >
+                {route.title}
+              </Text>
+            );
+          }}
+          activeColor="lightblue"
+          inactiveColor="white"            
+          style={{
+            backgroundColor: "#112f4e",  
+            height: 100,                
+            borderTopLeftRadius: 15,    
+            borderTopRightRadius: 15,
+            elevation: 5  ,                
+            shadowColor: "#000000ff",        
+            shadowOffset: { width: 0, height: -3 },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+          }}
+        />
+      </LinearGradient>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1,  },
+  screen: { flex: 1,  justifyContent:'center', alignItems:"center"},
 });

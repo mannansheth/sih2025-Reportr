@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Leaflet Map</title>
+    <title>Leaflet Map with Heatmap</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link
       rel="stylesheet"
@@ -19,55 +19,110 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-      const map = L.map('map').setView([19.0760, 72.8777], 13);
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
+    <script>
+      const map = L.map('map').setView([19.1760, 72.8577], 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      const markers = [
-        { lat: 19.1853, lng: 72.8777, iconUrl: 'favicon.png' }, 
-        { lat: 19.0760, lng: 72.8777, iconUrl: '/marker2.png' }, 
-        { lat: 19.1999792, lng: 72.8981052, iconUrl: '/marker3.png' }, 
-        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' },
-        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
-        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
-        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
-        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' }, 
-        { lat: 19.1998792, lng: 72.8581052, iconUrl: '/marker3.png' } 
-      ];
-
-      markers.forEach(m => {
-        const icon = L.icon({
-          iconUrl: m.iconUrl,
-          iconSize: [15, 15],
-        });
-        L.marker([m.lat, m.lng]).addTo(map);
-      });
-
-      function addMarker(lat, lng, iconUrl) {
-        const icon = L.icon({ iconUrl, iconSize: [32, 32] });
-        const marker = L.marker([lat, lng], { icon }).addTo(map);
-        markers.push(marker);
-      }
+      const markers = [];
+      let heatLayer;
 
       function clearMarkers() {
         markers.forEach(m => map.removeLayer(m));
         markers.length = 0;
+        if (heatLayer) map.removeLayer(heatLayer);
       }
 
-      function setView(lat, lng, zoom = 5) {
+      function addDynamicMarkers(markerData) {
+        clearMarkers();
+
+        markerData.forEach(m => {
+          let pointerIcon;
+          if (m.isUser) {
+            pointerIcon = L.divIcon({
+            className: "custom-marker",
+            html: `
+              <div style="
+                position: relative;
+                width: 11px;
+                height: 11px;
+                background: ${m.color};
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 0 4px rgba(0,0,0,0.4);
+              ">
+                <div style="
+                  position: absolute;
+                  left: 50%;
+                  top: -8px;
+                  width: 0;
+                  height: 0;
+                  border-left: 6px solid transparent;
+                  border-right: 6px solid transparent;
+                  border-bottom: 8px solid ${m.color};
+                  transform: translateX(-50%);
+                "></div>
+              </div>
+            `,
+            iconSize: [12, 20],
+            iconAnchor: [10, 28]
+          });
+          } else {
+            pointerIcon = L.divIcon({ 
+              className: "custom-marker", 
+              html: `
+              <div 
+              style=" position: relative; width: 16.5px; height: 18px; background: ${m.color}; border-radius: 50%; border: 2px solid ${m.color}; box-shadow: 0 0 4px rgba(0,0,0,0.4); "> <div style=" position: absolute; left: 50%; bottom: -8px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid ${m.color}; transform: translateX(-50%); "></div> <div style=" position: absolute; bottom: 4.3px; left:29%; width:8px; height: 7px; border-radius:100%; background-color:rgba(255,255,255,0.6); z-index:999; "></div> </div> `, 
+              
+              iconSize: [12, 20], iconAnchor: [10, 28] });
+          }
+          const marker = L.marker([m.lat, m.lng], { icon: pointerIcon }).addTo(map);
+          marker.on('click', () => {
+            // Example: send event back to React Native
+            map.setView([m.lat, m.lng], 16);  
+            window.ReactNativeWebView?.postMessage(JSON.stringify({
+              type: 'markerClick',
+              Rid: m.Rid,
+              lat: m.lat,
+              lng: m.lng,
+              color: m.color
+            }));
+          });
+          markers.push(marker);
+        });
+
+        const heatData = markerData.filter(m => !m.isUser).map(m => [m.lat, m.lng, 5  ]);
+        heatLayer = L.heatLayer(heatData, {
+          radius: 10,
+          blur: 15,
+          maxZoom: 5,
+          gradient: {
+            0.2: 'lightgreen', 0.4: 'lime', 0.6: 'yellow', 0.8: 'orange', 1.0: 'red'
+          }
+        }).addTo(map);
+      }
+
+      function setView(lat, lng, zoom = 12) {
         map.setView([lat, lng], zoom);
       }
 
-      // Listen to messages from React Native
-      window.addEventListener("message", (event) => {
+      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "mapReady" }));
+
+      function receiveMessage(event) {
         const data = JSON.parse(event.data);
-        if (data.type === "addMarker") addMarker(data.lat, data.lng, data.iconUrl);
+        if (data.type === "loadMarkers") addDynamicMarkers(data.markers);
         if (data.type === "clearMarkers") clearMarkers();
-        if (data.type === "setView") setView(data.lat, data.lng, data.zoom);
-      });
+        if (data.type === "setView") setView(data.userLoc.lat, data.userLoc.lng, 13);
+      }
+
+      // RN WebView message bridge
+      window.ReactNativeWebView.onMessage = receiveMessage;
+      document.addEventListener("message", receiveMessage); // Android fallback
+      window.addEventListener("message", receiveMessage);   // iOS fallback
     </script>
+
   </body>
 </html>
