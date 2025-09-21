@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import {
   GestureDetector,
-  GestureHandlerRootView
+  GestureHandlerRootView,
+  NativeViewGestureHandler
 } from "react-native-gesture-handler";
 import { Button } from "react-native-paper";
 const CameraUI = ({
@@ -23,6 +24,7 @@ const CameraUI = ({
 }) => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+
         <GestureDetector gesture={pinchGesture}>
             <View style={{ flex: 1 }}>
                 <CameraView
@@ -63,11 +65,11 @@ const CameraUI = ({
         <TouchableOpacity style={styles.captureBtn} onPress={takePicture} />
         <TouchableOpacity
             onPress={() => setCameraType(CameraType === "back" ? "front" : "back")}
-            style={styles.button}
+            style={[styles.button, {left:60}]}
         >
             <Ionicons name="camera-reverse" size={30} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { left: 280 }]}>
+        <TouchableOpacity style={[styles.button, { right: 60 }]}>
             <Button title="" onPress={pickImage}>
                 <Ionicons name="image" size={26} color="white" />
             </Button>
@@ -85,7 +87,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     position: "absolute",
     bottom: 40,
-    left: 60,
     alignItems: "center",
     justifyContent: "center",
   },

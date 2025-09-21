@@ -1,0 +1,104 @@
+{
+  "auth": {
+    "welcome": "ReportR मध्ये आपले स्वागत आहे",
+    "subtitle": "आपल्या क्षेत्रातील नागरी समस्यांचा अहवाल द्या",
+    "phoneNumber": "फोन नंबर",
+    "enterPhone": "आपला फोन नंबर टाका",
+    "enterName": "आपले नाव टाका",
+    "sendOTP": "OTP पाठवा",
+    "verifyOTP": "OTP सत्यापित करा",
+    "enterOTP": "आपल्या फोनवर पाठवलेला OTP टाका",
+    "resendOTP": "OTP पुन्हा पाठवा",
+    "verifying": "सत्यापित करत आहे...",
+    "invalidPhone": "कृपया वैध फोन नंबर टाका",
+    "invalidOTP": "कृपया वैध OTP टाका",
+    "otpSent": "OTP यशस्वीरित्या पाठवला",
+    "loginSuccess": "लॉगिन यशस्वी",
+    "loginFailed": "लॉगिन अयशस्वी. कृपया पुन्हा प्रयत्न करा",
+    "biometricPrompt": "प्रमाणीकरणासाठी आपली बोट वापरा",
+    "biometricFallback": "पासवर्ड वापरा",
+    "biometricError": "बायोमेट्रिक प्रमाणीकरण अयशस्वी"
+  },
+  "report": {
+    "newReport": "नवीन अहवाल",
+    "selectCategory": "श्रेणी निवडा",
+    "categories": {
+      "pothole": "खड्डा",
+      "garbage": "कचरा",
+      "streetlight": "रस्त्यावरील दिवा",
+      "water": "पाण्याची समस्या",
+      "emergency": "आणीबाणी",
+      "other": "इतर"
+    },
+    "description": "वर्णन",
+    "enterDescription": "समस्येचे तपशीलवार वर्णन करा",
+    "location": "स्थान",
+    "currentLocation": "सध्याचे स्थान वापरा",
+    "selectLocation": "नकाशावर स्थान निवडा",
+    "attachPhoto": "फोटो जोडा",
+    "takePhoto": "फोटो काढा",
+    "chooseFromGallery": "गॅलरीतून निवडा",
+    "submitReport": "अहवाल सबमिट करा",
+    "submitting": "सबमिट करत आहे...",
+    "reportSubmitted": "अहवाल यशस्वीरित्या सबमिट केला",
+    "reportFailed": "अहवाल सबमिट करण्यात अयशस्वी",
+    "requiredField": "हे फील्ड आवश्यक आहे",
+    "locationRequired": "स्थान आवश्यक आहे",
+    "photoRequired": "फोटो आवश्यक आहे",
+    "transcriptionFailed": "ऑडिओ ट्रान्सक्रिप्शन अयशस्वी"
+  },
+  "map": {
+    "searchLocation": "स्थान शोधा...",
+    "myReports": "माझे अहवाल",
+    "allReports": "सर्व अहवाल",
+    "filterBy": "श्रेणीनुसार फिल्टर करा",
+    "noReports": "कोणतेही अहवाल सापडले नाहीत",
+    "reportDetails": "अहवाल तपशील",
+    "status": "स्थिती",
+    "reportedBy": "द्वारे अहवाल दिला",
+    "reportedOn": "अहवालाची तारीख",
+    "statusTypes": {
+      "pending": "प्रलंबित",
+      "inProgress": "प्रगतीत",
+      "resolved": "निराकरण झाले",
+      "rejected": "नाकारले"
+    }
+  },
+  "navigation": {
+    "home": "होम",
+    "map": "नकाशा",
+    "camera": "अहवाल",
+    "profile": "प्रोफाइल",
+    "analytics": "अॅनालिटिक्स",
+    "reports": "अहवाल"
+  },
+  "camera": {
+    "takePhoto": "फोटो काढा",
+    "retakePhoto": "पुन्हा काढा",
+    "usePhoto": "फोटो वापरा",
+    "cameraPermission": "फोटो काढण्यासाठी कॅमेरा परवानगी आवश्यक आहे",
+    "grantPermission": "परवानगी द्या",
+    "permissionDenied": "कॅमेरा परवानगी नाकारली"
+  },
+  "common": {
+    "ok": "ठीक आहे",
+    "cancel": "रद्द करा",
+    "yes": "होय",
+    "no": "नाही",
+    "save": "सेव्ह करा",
+    "delete": "हटवा",
+    "edit": "संपादित करा",
+    "loading": "लोड होत आहे...",
+    "error": "त्रुटी",
+    "success": "यश",
+    "retry": "पुन्हा प्रयत्न करा",
+    "close": "बंद करा"
+  },
+  "settings": {
+    "language": "भाषा",
+    "selectLanguage": "भाषा निवडा",
+    "english": "English",
+    "hindi": "हिन्दी",
+    "marathi": "मराठी"
+  }
+}

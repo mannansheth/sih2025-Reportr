@@ -25,6 +25,7 @@ export const generatePDF = async (reportData, imageUri) => {
   try {
     // Load template PDF
     const asset = Asset.fromModule(require('../assets/templates/PendingReport.pdf'));
+    console.log(asset)
     await asset.downloadAsync();
     const pdfBase64 = await FileSystem.readAsStringAsync(asset.localUri, {
       encoding: FileSystem.EncodingType.Base64,
@@ -41,13 +42,15 @@ export const generatePDF = async (reportData, imageUri) => {
     const fields = {
       // Top section
       reportId: { x: 175, y: 795, size: 18 },      // "Report ID:" field
-      date: { x: 635, y: 1015, size: 20 },          // Date field (top right)
+      date: { x: 640, y: 1015, size: 20 },          // Date field (top right)
       time: { x: 550, y:1015, size:20},
       name: { x: 130, y: 750, size: 20 },           // "Name:" field
-      number: { x: 170, y: 710, size: 20 },         // "Number:" field
+      number: { x: 155, y: 700, size: 20 },         // "Number:" field
       category: { x: 80, y: 515, size: 20 },       // "Issue Category:" field
       description: { x: 80, y: 350, size: 20 },    // "Description of Issue:" field
-      location: { x: 80, y: 190, size:20 },       // "Location:" field
+      lat: { x: 80, y: 205, size:20 },       // "Location:" field
+      long: { x: 190, y: 205, size:20 },       // "Location:" field
+      location: { x: 80, y: 180, size:18 },       // "Location:" field
     };
 
     // Add text to PDF
@@ -70,6 +73,8 @@ export const generatePDF = async (reportData, imageUri) => {
     
     page.drawText(cleanText(reportData.category), fields.category);
     page.drawText(cleanText(reportData.description), fields.description);
+    page.drawText(cleanText(reportData.location?.lat+", " || ''), fields.lat);
+    page.drawText(cleanText(reportData.location?.lng || ''), fields.long);
     page.drawText(cleanText(reportData.location?.loc || ''), fields.location);
 
     // Add image if provided

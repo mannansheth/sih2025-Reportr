@@ -1,11 +1,10 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Text, TouchableOpacity, Animated, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 
-export default function SubmitButton( { handleReportSubmit }) {
+export default function SubmitButton( { handleReportSubmit, isSubmitLoading }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
       toValue: 0.95,
@@ -47,7 +46,7 @@ export default function SubmitButton( { handleReportSubmit }) {
             alignSelf:"center",
             paddingHorizontal: 2, width:"97%"}}>
             <Text style={{ textAlign: "center", color: "rgba(48, 48, 48, 1)", fontWeight: "500", fontSize: 16 }}>
-              Submit
+              {isSubmitLoading ? "Submitting..." : "Submit"}
             </Text>
 
           </View>

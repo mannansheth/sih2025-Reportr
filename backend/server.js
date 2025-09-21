@@ -5,7 +5,8 @@ const cors = require("cors")
 const { detectIssues } = require("./services/IssueDetection")
 const upload = require("./config/multerConfig")
 const { transcribeAudio } = require("./services/Transcribe")
-const dbRoutes = require("./services/dbFunctions")
+const userRoutes = require("./services/userRoutes")
+const reportRoutes = require("./services/reportRoutes")
 const fs = require("fs")
 dotenv.config()
 const {
@@ -14,7 +15,12 @@ const {
 const app = express()
 app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json({ limit: "10mb" }));
-app.use('/api/user', dbRoutes);
+
+app.use('/api/user', userRoutes); 
+app.use('/api/reports', reportRoutes)
+app.get('/', (req, res) => {
+  res.json({"Hello":"Working"})
+})
 
 app.post("/api/transcribeDescription", upload.single("audio"), async (req, res) => {
   try {
